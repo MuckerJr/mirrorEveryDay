@@ -1,74 +1,126 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { IconSymbol } from "@/app-example/components/ui/IconSymbol";
+import { Camera, CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import { useRef, useState } from "react";
+import { Text, View, Button, StyleSheet, TouchableOpacity, Image } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function Index() {
+  const [facing, setFacing] = useState<CameraType>('back');
+  const [photoUri, setPhotoUri] = useState<string | null>(null); // to display the photo
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null); // Reference for cameraView
+  if(!permission) {
+    // Camera permissions are loading
+    return <View />;
+  }
 
-export default function HomeScreen() {
+  if(!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>We need your permission to show the camera</Text>
+        <Button onPress={requestPermission} title="grant permission" />
+      </View>
+    )
+  }
+
+  function toggleCameraFacing() {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
+  }
+
+  async function takePhoto() {
+    if(cameraRef.current) {
+      try {
+        // Take the photo
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: 0.8, 
+          base64: false,
+          skipProcessing: false,
+        });
+        console.log('photo taken: ', photo)
+        if(photo) {
+          setPhotoUri(photo.uri)
+        }
+      } catch (error) {
+        console.error("Error tkaing photo: ", error)
+      }
+    }
+  }
+
+  function retakePhoto() {setPhotoUri(null)};
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      {photoUri ? (
+        <View style={styles.imageContainer}>
+        <Image source={{ uri: photoUri }} style={styles.image} />
+        <Button title="Retake Photo" onPress={retakePhoto} />
+      </View>
+      ):(
+        <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+          <View style={styles.flipButtonContainer}>
+            <TouchableOpacity style={styles.flipButton} onPress={toggleCameraFacing}>
+              <IconSymbol size={28} name='arrow.trianglehead.2.clockwise.rotate.90' color={'white'} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.shutterButtonContainer}>
+            <TouchableOpacity style={styles.shutterButton} onPress={takePhoto}>
+              <IconSymbol size={56} name='camera.circle' color={'white'} />
+            </TouchableOpacity>
+          </View>
+        </CameraView>
+      )}
+        
+      </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    justifyContent:'center'
+  }, 
+  camera: {
+    flex:1
+  },
+  flipButtonContainer: {
+    flex: 1,
     flexDirection: 'row',
+    backgroundColor: 'transparent',
+    margin: 32,
+  },
+  shutterButtonContainer:{
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    margin: 32,
+  },
+  flipButton: {
+    flex:1,
+    alignSelf: 'flex-start',
+    alignItems: 'flex-end',
+  }, 
+  shutterButton: {
+    flex:1,
+    alignSelf: 'flex-end',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  imageContainer: {
+    flex:1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  image: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover'
   },
-});
+  message: {
+    textAlign: 'center',
+    paddingBottom: 10,
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  }
+})
