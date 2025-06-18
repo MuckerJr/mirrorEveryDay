@@ -31,7 +31,7 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
-        }
+        }        
       ],
       [
         "expo-camera",
@@ -39,6 +39,14 @@
           "cameraPermission": "Allow $(mirrorEveryDay) to access your camera",
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(mirrorEveryDay) to access your photos.",
+          "savePhotosPermission": "Allow $(mirrorEveryDay) to save photos.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ],

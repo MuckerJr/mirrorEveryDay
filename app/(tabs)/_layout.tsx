@@ -5,6 +5,13 @@ export default function TabLayout() {
     return (
         <Tabs screenOptions={{ tabBarActiveTintColor: 'blue'}}>
             <Tabs.Screen
+                name="gallery"
+                options={{
+                    title: 'Gallery',
+                    tabBarIcon: ({color}) => <IconSymbol size={28} name="photo.on.rectangle.angled" color={color}/>
+                }}
+            />
+            <Tabs.Screen
                 name="index"
                 options={{
                     title: 'Camera',

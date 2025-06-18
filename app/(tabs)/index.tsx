@@ -40,7 +40,7 @@ export default function Index() {
           setPhotoUri(photo.uri)
         }
       } catch (error) {
-        console.error("Error tkaing photo: ", error)
+        console.error("Error taking photo: ", error)
       }
     }
   }
